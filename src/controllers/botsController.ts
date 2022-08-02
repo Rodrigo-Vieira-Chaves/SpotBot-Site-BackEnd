@@ -11,7 +11,7 @@ class BotsController extends Controller
 
     getBotByUserID (req: Request, res: Response)
     {
-        this.callService(res, botsService.getBotByUserID.bind(botsService), req.params.userid);
+        this.callService(res, botsService.getBotsByUsername.bind(botsService), req.params.userid);
     }
 
     getAllBots (req: Request, res: Response)
@@ -27,6 +27,11 @@ class BotsController extends Controller
     updateBotStatus (req: Request, res: Response)
     {
         this.callService(res, botsService.updateBotStatus.bind(botsService), req.body);
+    }
+
+    deleteBot (req: Request, res: Response)
+    {
+        this.callService(res, botsService.deleteBot.bind(botsService), req.params.id);
     }
 }
 

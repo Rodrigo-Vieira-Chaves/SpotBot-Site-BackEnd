@@ -33,6 +33,7 @@ class Routes
         getBotRoutes.get('/', botsController.getAllBots.bind(botsController));
         getBotRoutes.post('/', botsController.createBot.bind(botsController));
         getBotRoutes.put('/', botsController.updateBotStatus.bind(botsController));
+        getBotRoutes.delete('/:id', botsController.deleteBot.bind(botsController));
 
         return getBotRoutes;
     }

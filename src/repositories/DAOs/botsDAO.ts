@@ -7,27 +7,41 @@ class BotsDAO extends DAO
     getBotByID (botID: string)
     {
         const sql = `SELECT botID,
-                            userID,
+                            botName,
+                            exchange,
                             status
                     FROM bots WHERE botID = ?`;
 
         return this.executeSQL<BotDTO>(sql, [ botID ]);
     }
 
-    getBotByUserID (userID: string)
+    getBotByUserName (userID: string)
     {
         const sql = `SELECT botID,
-                            userID,
+                            botName,
+                            exchange,
                             status
                     FROM bots WHERE userID = ?`;
 
         return this.executeSQL<BotDTO>(sql, [ userID ]);
     }
 
+    getBotByBotName (botName: string)
+    {
+        const sql = `SELECT botID,
+                            botName,
+                            exchange,
+                            status
+                    FROM bots WHERE botName = ?`;
+
+        return this.executeSQL<BotDTO>(sql, [ botName ]);
+    }
+
     getAllBots ()
     {
         const sql = `SELECT botID,
-                            userID,
+                            botName,
+                            exchange,
                             status
                     FROM bots`;
 
@@ -36,13 +50,15 @@ class BotsDAO extends DAO
 
     createBot (bot: BotDTO)
     {
-        const sql = `INSERT INTO bots VALUES (?, ?, ?) 
+        const sql = `INSERT INTO bots VALUES (?, ?, ?, ?, ?) 
                     RETURNING *`;
 
         return this.executeSQL<BotDTO>(sql,
             [
                 uuiv4(),
                 bot.userID,
+                bot.botName,
+                bot.exchange,
                 bot.status
             ]);
     }
@@ -57,6 +73,20 @@ class BotsDAO extends DAO
                 status,
                 botID
             ]);
+    }
+
+    deleteBotByID (botID: string)
+    {
+        const sql = 'DELETE FROM bots WHERE botID = ? RETURNING *';
+
+        return this.executeSQL<BotDTO>(sql, [ botID ]);
+    }
+
+    deleteBotByBotName (botName: string)
+    {
+        const sql = 'DELETE FROM bots WHERE botName = ? RETURNING *';
+
+        return this.executeSQL<BotDTO>(sql, [ botName ]);
     }
 }
 

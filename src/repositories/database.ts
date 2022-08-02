@@ -3,7 +3,7 @@ import sqlite3 from 'sqlite3';
 class DatabaseInstance
 {
     private readonly database: sqlite3.Database;
-    private readonly DBNAME = './src/repositories/spotbotDatabase.db';
+    private readonly DBNAME = './src/repositories/database.db';
 
     private readonly SQL_TABLES_SCRIPT =
         `
@@ -18,6 +18,8 @@ class DatabaseInstance
             CREATE TABLE IF NOT EXISTS bots (
                 botID TEXT PRIMARY KEY,
                 userID TEXT NOT NULL,
+                botName TEXT NOT NULL UNIQUE,
+                exchange TEXT NOT NULL,
                 status TEXT NOT NULL,
                 FOREIGN KEY (userID) REFERENCES users (userID)
             );
@@ -35,7 +37,7 @@ class DatabaseInstance
             else
             {
                 this.database.exec(this.SQL_TABLES_SCRIPT);
-                console.log(`${this.DBNAME} created successfully.`);
+                console.log(`'${this.DBNAME}' created successfully.`);
             }
         });
     }
