@@ -72,7 +72,7 @@ class BotsService extends Service
         const existentBot = await this.getBotByID(botID);
         const result = await botsDAO.deleteBotByID(existentBot.data.botID);
 
-        botsManager.updateBots(existentBot.data);
+        await botsManager.updateBots(existentBot.data);
 
         return this.serviceResponseBuilder(result, `Error when deleting bot ${existentBot.data.botName}.`, 204);
     }
