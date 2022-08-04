@@ -47,9 +47,9 @@ class UsersDAO extends DAO
             [
                 uuiv4(),
                 user.userName,
-                passwordCryptography.encryptPassword(user.password as string),
+                passwordCryptography.encryptPassword(user.password),
                 user.apiKey,
-                user.apiSecret
+                passwordCryptography.encryptPassword(user.apiSecret),
             ]);
     }
 }

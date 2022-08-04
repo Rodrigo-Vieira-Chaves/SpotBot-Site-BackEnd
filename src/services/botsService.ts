@@ -41,7 +41,7 @@ class BotsService extends Service
 
         if (existentBot.length > 0)
         {
-            throw new UnauthorizedError('User cannot duplicate a preexistent bot.');
+            throw new UnauthorizedError('A bot with the same configurations already exists in database.');
         }
 
         const user = await usersService.getUserByUserName(newBot.userName);
@@ -59,22 +59,28 @@ class BotsService extends Service
     {
         botsPropertiesValidator.validateBotStatus(botInfo.status);
 
+        if (botInfo.status === BotStatus.DELETE)
+        {
+            return this.deleteBot(botInfo.botID);
+        }
+
         const existentBot = await this.getBotByID(botInfo.botID);
         const result = await botsDAO.updateBotStatus(botInfo.botID, botInfo.status);
 
-        await botsManager.updateBots(result);
+        // await botsManager.updateBots(result);
 
-        return this.serviceResponseBuilder(result, `Error when updating bot ${existentBot.data.botName}`, 204);
+        return this.serviceResponseBuilder(result, `Error when updating bot ${existentBot.data.botName}`);
     }
 
     async deleteBot (botID: string)
     {
         const existentBot = await this.getBotByID(botID);
         const result = await botsDAO.deleteBotByID(existentBot.data.botID);
+        result[0].status = BotStatus.DELETE;
 
-        await botsManager.updateBots(existentBot.data);
+        await botsManager.updateBots(result);
 
-        return this.serviceResponseBuilder(result, `Error when deleting bot ${existentBot.data.botName}.`, 204);
+        return this.serviceResponseBuilder(result, `Error when deleting bot ${existentBot.data.botName}.`);
     }
 
     private getBotName (bot: BotDTO)

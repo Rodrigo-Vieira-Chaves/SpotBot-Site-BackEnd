@@ -18,6 +18,11 @@ class BotsManager
     {
         const botProcess = await describe_PM2(bot.botName);
 
+        if (botProcess.length <= 0)
+        {
+            return;
+        }
+
         const botID = botProcess[0]?.pm_id as number;
         const statusInPM2 = botProcess[0]?.pm2_env.status as string;
 
