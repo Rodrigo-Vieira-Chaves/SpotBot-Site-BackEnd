@@ -4,8 +4,6 @@ import { ValidationError } from '../errors/ValidationError';
 
 class UsersPropertiesValidator extends PropertiesValidator
 {
-//     XQVCwwsDdDd64i1Hl8XTRje8e3_2m3jaC-euCJ9o
-// QGODzRIllH3Yhc3fLX5ryepYSjKyJrMWskT8V55M
     private readonly nameRegex = /^([a-z0-9]|[-._](?![-._])){4,10}$/;
     private readonly passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,10}$/;
 

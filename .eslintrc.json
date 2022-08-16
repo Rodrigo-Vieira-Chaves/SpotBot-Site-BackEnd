@@ -109,7 +109,7 @@
         "jsx-quotes": "error",
         "key-spacing": "error",
         "keyword-spacing": "error",
-        "line-comment-position": "error",
+        "line-comment-position": "off",
         "linebreak-style": [
             "error",
             "windows"
@@ -126,7 +126,7 @@
         "max-depth": "off",
         "max-len": [
             2, // error
-            150, // max-len
+            200, // max-len
             4 // tab len
         ],
         "max-lines": "off",
@@ -162,7 +162,7 @@
         "no-implicit-coercion": "error",
         "no-implicit-globals": "error",
         "no-implied-eval": "error",
-        "no-inline-comments": "error",
+        "no-inline-comments": "off",
         "no-invalid-this": "error",
         "no-iterator": "error",
         "no-label-var": "error",

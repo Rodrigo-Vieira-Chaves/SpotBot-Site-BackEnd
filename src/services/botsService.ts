@@ -67,7 +67,7 @@ class BotsService extends Service
         const existentBot = await this.getBotByID(botInfo.botID);
         const result = await botsDAO.updateBotStatus(botInfo.botID, botInfo.status);
 
-        // await botsManager.updateBots(result);
+        await botsManager.updateBots(result);
 
         return this.serviceResponseBuilder(result, `Error when updating bot ${existentBot.data.botName}`);
     }
