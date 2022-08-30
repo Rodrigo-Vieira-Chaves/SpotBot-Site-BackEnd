@@ -9,9 +9,7 @@ class UsersDAO extends DAO
     {
         const sql = `SELECT userID,
                             userName,
-                            password,
-                            apiKey,
-                            apiSecret
+                            password
                     FROM users WHERE userID = ?`;
 
         return this.executeSQL<UserDTO>(sql, [ userID ]);
@@ -21,9 +19,7 @@ class UsersDAO extends DAO
     {
         const sql = `SELECT userID,
                             userName,
-                            password,
-                            apiKey,
-                            apiSecret
+                            password
                     FROM users WHERE userName = ?`;
 
         return this.executeSQL<UserDTO>(sql, [ userName ]);
@@ -32,8 +28,7 @@ class UsersDAO extends DAO
     getAllUsers ()
     {
         const sql = `SELECT userID,
-                            userName,
-                            apiKey
+                            userName
                     FROM users`;
 
         return this.executeSQL<UserDTO>(sql, []);
@@ -41,15 +36,13 @@ class UsersDAO extends DAO
 
     createUser (user: UserDTO)
     {
-        const sql = 'INSERT INTO users VALUES (?, ?, ?, ?, ?) RETURNING *';
+        const sql = 'INSERT INTO users VALUES (?, ?, ?) RETURNING userID, userName';
 
         return this.executeSQL<UserDTO>(sql,
             [
                 uuiv4(),
                 user.userName,
-                passwordCryptography.encryptPassword(user.password),
-                user.apiKey,
-                passwordCryptography.encryptPassword(user.apiSecret),
+                passwordCryptography.encryptPassword(user.password)
             ]);
     }
 }

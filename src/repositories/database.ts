@@ -10,9 +10,14 @@ class DatabaseInstance
             CREATE TABLE IF NOT EXISTS users (
                 userID TEXT PRIMARY KEY,
                 userName TEXT NOT NULL UNIQUE,
-                password TEXT NOT NULL,
-                apiKey TEXT NOT NULL UNIQUE,
-                apiSecret TEXT NOT NULL
+                password TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS apiKeys (
+                apiKey TEXT PRIMARY KEY,
+                apiSecret TEXT NOT NULL UNIQUE,
+                userID TEXT NOT NULL,
+                FOREIGN KEY (userID) REFERENCES users (userID)
             );
 
             CREATE TABLE IF NOT EXISTS bots (

@@ -5,10 +5,7 @@ class Service
 {
     protected serviceResponseBuilder (DAOResult: any[], emptyMessage: string, successCode = 200, echo: any = null): ServiceResponse
     {
-        if (DAOResult.length <= 0)
-        {
-            throw new EmptyError(emptyMessage);
-        }
+        if (DAOResult.length <= 0) throw new EmptyError(emptyMessage);
 
         const serviceResponse =
             {

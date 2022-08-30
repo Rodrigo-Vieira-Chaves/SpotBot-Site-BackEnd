@@ -8,20 +8,15 @@ class BotsManager
     {
         await connect_PM2();
 
-        for (const bot of botsList)
-        {
-            this.updateBot(bot);
-        }
+        for (const bot of botsList) this.updateBot(bot);
     }
 
     private async updateBot (bot: BotDTO)
     {
         const botProcess = await describe_PM2(bot.botName);
 
-        if (botProcess.length <= 0)
-        {
-            return;
-        }
+        if (botProcess.length <= 0) return;
+
 
         const botID = botProcess[0]?.pm_id as number;
         const statusInPM2 = botProcess[0]?.pm2_env.status as string;
@@ -44,10 +39,8 @@ class BotsManager
 
     private async commandBot (botID: number, botName: string, statusInPM2: string, command: 'STOP' | 'STOP_AFTER_TRADE')
     {
-        if (!statusInPM2 || statusInPM2 === 'stopped')
-        {
-            return;
-        }
+        if (!statusInPM2 || statusInPM2 === 'stopped') return;
+
 
         const packet =
         {
@@ -65,10 +58,8 @@ class BotsManager
 
     private async startBot (bot: BotDTO, statusInPM2: string)
     {
-        if (statusInPM2 === 'online')
-        {
-            return;
-        }
+        if (statusInPM2 === 'online') return;
+
 
         const newBotProcess =
         {

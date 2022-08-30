@@ -4,20 +4,18 @@ import { ValidationError } from '../errors/ValidationError';
 
 class UsersPropertiesValidator extends PropertiesValidator
 {
-    private readonly nameRegex = /^([a-z0-9]|[-._](?![-._])){4,10}$/;
-    private readonly passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,10}$/;
+    private readonly nameRegex = /^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/;
+    private readonly passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%¨&*?])[A-Za-z\d!@#$%¨&*?]{8,10}$/;
 
     private readonly allValidators =
         [
             this.validateUserName.bind(this),
-            this.validatePassword.bind(this),
-            this.validateApiKey.bind(this),
-            this.validateApiSecret.bind(this)
+            this.validatePassword.bind(this)
         ];
 
     validateAll (user: UserDTO)
     {
-        const params = [ user.userName, user.password, user.apiKey, user.apiSecret ];
+        const params = [ user.userName, user.password ];
 
         this.validateAllProperties(this.allValidators, params);
     }
@@ -27,12 +25,7 @@ class UsersPropertiesValidator extends PropertiesValidator
         if (!userName || !this.nameRegex.test(userName))
         {
             throw new ValidationError(
-                'Nome do usuário deve ser de 4 a 10 caracteres utilizando apenas letras, dígitos e caracteres especiais, sem espaços.');
-        }
-
-        if (userName.length < 2)
-        {
-            throw new ValidationError('Nome do usuário deve possuir 2 ou mais caracteres.');
+                'Nome do usuário deve ser de 8 a 20 caracteres utilizando apenas letras, dígitos, underscore ou ponto.');
         }
     }
 
@@ -42,22 +35,6 @@ class UsersPropertiesValidator extends PropertiesValidator
         {
             throw new ValidationError(
                 'Senha deve possuir de 8 a 10 caracteres, começando por letra maiúscula, conter pelo menos um número e um caracter especial.');
-        }
-    }
-
-    validateApiKey (apiKey: string)
-    {
-        if (!apiKey)
-        {
-            throw new ValidationError('ApiKey was not provided.');
-        }
-    }
-
-    validateApiSecret (apiSecret: string)
-    {
-        if (!apiSecret)
-        {
-            throw new ValidationError('ApiSecret was not provided.');
         }
     }
 }

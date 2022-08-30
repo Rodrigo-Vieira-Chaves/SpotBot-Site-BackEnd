@@ -23,6 +23,21 @@ class UsersController extends Controller
     {
         this.callService(res, usersService.createUser.bind(usersService), req.body);
     }
+
+    async authenticateUser (req: Request, res: Response)
+    {
+        this.callService(res, usersService.authenticateUser.bind(usersService), { req, res, user: req.body } );
+    }
+
+    async checkIfUserIsAuthenticated (req: Request, res: Response)
+    {
+        this.callService(res, usersService.checkIfUserIsAuthenticated.bind(usersService), { req, res } );
+    }
+
+    async logout (req: Request, res: Response)
+    {
+        this.callService(res, usersService.logout.bind(usersService), res);
+    }
 }
 
 const usersController = new UsersController();

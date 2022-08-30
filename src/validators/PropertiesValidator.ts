@@ -25,10 +25,7 @@ class PropertiesValidator
             }
         });
 
-        if (errorMessage.length > 0)
-        {
-            throw new ValidationError(errorMessage.slice(0, -1));
-        }
+        if (errorMessage.length > 0) throw new ValidationError(errorMessage.slice(0, -1));
     }
 }
 

@@ -8,14 +8,8 @@ class DAO
         {
             databaseInstance.getDatabase().all(sql, parameters, (err, rows) =>
             {
-                if (err)
-                {
-                    reject(err);
-                }
-                else
-                {
-                    resolve(rows);
-                }
+                if (err) reject(err);
+                else resolve(rows);
             });
         });
     }

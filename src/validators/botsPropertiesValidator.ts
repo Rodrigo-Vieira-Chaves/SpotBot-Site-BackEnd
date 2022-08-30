@@ -21,26 +21,17 @@ class BotsPropertiesValidator extends PropertiesValidator
 
     validateExchange (exchange: string)
     {
-        if (!Object.values(Exchanges).includes(exchange as Exchanges))
-        {
-            throw new ValidationError(`Exchange can only be one of these values: ${Object.values(Exchanges)}`);
-        }
+        if (!Object.values(Exchanges).includes(exchange as Exchanges)) throw new ValidationError(`Exchange can only be one of these values: ${Object.values(Exchanges)}`);
     }
 
     validateBotStatus (status: string)
     {
-        if (!Object.values(BotStatus).includes(status as BotStatus))
-        {
-            throw new ValidationError(`Bot status can only be one of these values: ${Object.values(BotStatus)}`);
-        }
+        if (!Object.values(BotStatus).includes(status as BotStatus)) throw new ValidationError(`Bot status can only be one of these values: ${Object.values(BotStatus)}`);
     }
 
     validateBotAccount (account: string)
     {
-        if (!account)
-        {
-            throw new ValidationError('Account was not provided.');
-        }
+        if (!account) throw new ValidationError('Account was not provided.');
     }
 }
 

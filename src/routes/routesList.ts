@@ -6,7 +6,10 @@ class Routes
 {
     initRoutes (app: Express)
     {
-        app.use('/login', this.getLoginRoutes());
+        app.use('/createLogin', this.getLoginRoutes());
+        app.use('/authenticateLogin', this.getAuthenticateRoutes());
+        app.use('/checkLogin', this.getCheckRoutes());
+        app.use('/logout', this.getLogoutRoutes());
         app.use('/bot', this.getBotRoutes());
     }
 
@@ -14,19 +17,43 @@ class Routes
     {
         const getLoginRoutes = express.Router();
 
-        getLoginRoutes.get('/:id', usersController.getUserByID.bind(usersController));
-        // TODO essa rota pode estar inacessivel... mesmo do :id
-        getLoginRoutes.get('/:username', usersController.getUserByUserName.bind(usersController));
-        getLoginRoutes.get('/', usersController.getAllUsers.bind(usersController));
         getLoginRoutes.post('/', usersController.createUser.bind(usersController));
 
         return getLoginRoutes;
+    }
+
+    private getAuthenticateRoutes ()
+    {
+        const getAuthenticateRoutes = express.Router();
+
+        getAuthenticateRoutes.post('/', usersController.authenticateUser.bind(usersController));
+
+        return getAuthenticateRoutes;
+    }
+
+    private getCheckRoutes ()
+    {
+        const getCheckRoutes = express.Router();
+
+        getCheckRoutes.get('/', usersController.checkIfUserIsAuthenticated.bind(usersController));
+
+        return getCheckRoutes;
+    }
+
+    private getLogoutRoutes ()
+    {
+        const getLogoutRoutes = express.Router();
+
+        getLogoutRoutes.get('/', usersController.logout.bind(usersController));
+
+        return getLogoutRoutes;
     }
 
     private getBotRoutes ()
     {
         const getBotRoutes = express.Router();
 
+        // authToken.validateToken.bind(authToken)
         getBotRoutes.get('/:id', botsController.getBotByID.bind(botsController));
         // TODO essa rota pode estar inacessivel... mesmo do :id
         getBotRoutes.get('/:userid', botsController.getBotByUserID.bind(botsController));

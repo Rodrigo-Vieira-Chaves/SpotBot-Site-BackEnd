@@ -39,10 +39,7 @@ class BotsService extends Service
         const botName = this.getBotName(newBot);
         const existentBot = await botsDAO.getBotByBotName(botName);
 
-        if (existentBot.length > 0)
-        {
-            throw new UnauthorizedError('A bot with the same configurations already exists in database.');
-        }
+        if (existentBot.length > 0) throw new UnauthorizedError('A bot with the same configurations already exists in database.');
 
         const user = await usersService.getUserByUserName(newBot.userName);
 
@@ -59,10 +56,7 @@ class BotsService extends Service
     {
         botsPropertiesValidator.validateBotStatus(botInfo.status);
 
-        if (botInfo.status === BotStatus.DELETE)
-        {
-            return this.deleteBot(botInfo.botID);
-        }
+        if (botInfo.status === BotStatus.DELETE) return this.deleteBot(botInfo.botID);
 
         const existentBot = await this.getBotByID(botInfo.botID);
         const result = await botsDAO.updateBotStatus(botInfo.botID, botInfo.status);
