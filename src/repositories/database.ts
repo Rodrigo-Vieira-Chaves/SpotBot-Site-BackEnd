@@ -13,19 +13,15 @@ class DatabaseInstance
                 password TEXT NOT NULL
             );
 
-            CREATE TABLE IF NOT EXISTS apiKeys (
-                apiKey TEXT PRIMARY KEY,
-                apiSecret TEXT NOT NULL UNIQUE,
-                userID TEXT NOT NULL,
-                FOREIGN KEY (userID) REFERENCES users (userID)
-            );
-
             CREATE TABLE IF NOT EXISTS bots (
                 botID TEXT PRIMARY KEY,
                 userID TEXT NOT NULL,
                 botName TEXT NOT NULL UNIQUE,
                 exchange TEXT NOT NULL,
                 status TEXT NOT NULL,
+                account TEXT NOT NULL,
+                apiKey TEXT NOT NULL UNIQUE,
+                apiSecret TEXT NOT NULL UNIQUE,
                 FOREIGN KEY (userID) REFERENCES users (userID)
             );
         `;

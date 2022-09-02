@@ -1,37 +1,31 @@
 import { Request, Response } from 'express';
 import { Controller } from './Controller';
+import { authToken } from '../middlewares/AuthToken';
 import { botsService } from '../services/botsService';
 
 class BotsController extends Controller
 {
-    getBotByID (req: Request, res: Response)
+    getBotsByUsername (req: Request, res: Response)
     {
-        this.callService(res, botsService.getBotByID.bind(botsService), req.params.id);
-    }
-
-    getBotByUserID (req: Request, res: Response)
-    {
-        this.callService(res, botsService.getBotsByUsername.bind(botsService), req.params.userid);
-    }
-
-    getAllBots (req: Request, res: Response)
-    {
-        this.callService(res, botsService.getAllBots.bind(botsService));
+        this.callService(res, botsService.getBotsByUsername.bind(botsService), authToken.verifyToken(req.cookies.bearer).payload);
     }
 
     createBot (req: Request, res: Response)
     {
+        req.body.userName = authToken.verifyToken(req.cookies.bearer).payload;
         this.callService(res, botsService.createBot.bind(botsService), req.body);
     }
 
     updateBotStatus (req: Request, res: Response)
     {
+        req.body.userName = authToken.verifyToken(req.cookies.bearer).payload;
         this.callService(res, botsService.updateBotStatus.bind(botsService), req.body);
     }
 
     deleteBot (req: Request, res: Response)
     {
-        this.callService(res, botsService.deleteBot.bind(botsService), req.params.id);
+        req.body.userName = authToken.verifyToken(req.cookies.bearer).payload;
+        this.callService(res, botsService.deleteBot.bind(botsService), req.body);
     }
 }
 

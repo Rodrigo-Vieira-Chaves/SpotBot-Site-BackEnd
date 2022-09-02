@@ -1,9 +1,8 @@
 enum BotStatus
 {
-    EXECUTING = 'EXECUTING',
+    ACTIVE = 'ACTIVE',
     IDLE = 'IDLE',
-    STOP_AFTER_TRADE = 'STOP_AFTER_TRADE',
-    DELETE = 'DELETE'
+    STOP_AFTER_TRADE = 'STOP_AFTER_TRADE'
 }
 
 export { BotStatus };

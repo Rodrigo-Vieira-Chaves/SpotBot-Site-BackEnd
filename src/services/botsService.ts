@@ -16,70 +16,85 @@ class BotsService extends Service
         return this.serviceResponseBuilder(result, `Bot ${botID} does not exist.`);
     }
 
-    async getBotsByUsername (userName: string)
+    async getBotByBotName (botName: string)
     {
-        const result = await botsDAO.getBotByUserName(userName);
+        const result = await botsDAO.getBotByBotName(botName);
 
-        return this.serviceResponseBuilder(result, `User ${userName} has no bots created.`);
+        return this.serviceResponseBuilder(result, `Bot ${botName} does not exist.`);
     }
 
-    async getAllBots ()
+    async getBotsByUsername (userName: string)
     {
-        const result = await botsDAO.getAllBots();
+        const user = await usersService.getUserByUserName(userName);
+        const result = await botsDAO.getBotsByUserID(user.data.userID);
 
-        return this.serviceResponseBuilder(result, 'There are no bots in database.');
+        return this.serviceResponseBuilder(result, `User ${userName} has no bots created.`);
     }
 
     async createBot (bot: BotDTO)
     {
         const newBot = bot;
-        botsPropertiesValidator.validateExchange(newBot.exchange);
-        botsPropertiesValidator.validateBotAccount(newBot.account);
+        newBot.status = BotStatus.IDLE;
+        newBot.account = newBot.account ? newBot.account : 'main';
 
-        const botName = this.getBotName(newBot);
-        const existentBot = await botsDAO.getBotByBotName(botName);
+        botsPropertiesValidator.validateAll(newBot);
 
-        if (existentBot.length > 0) throw new UnauthorizedError('A bot with the same configurations already exists in database.');
+        const user = await usersService.getUserByUserName(newBot.userName as string);
 
-        const user = await usersService.getUserByUserName(newBot.userName);
+        const botName = this.getBotName(bot);
 
         newBot.botName = botName;
-        newBot.status = BotStatus.IDLE;
         newBot.userID = user.data.userID;
+
+        let existentBot = await botsDAO.getBotByBotName(botName);
+        if (existentBot.length > 0) throw new UnauthorizedError('A bot with same exchange and account already exists.');
+
+        existentBot = await botsDAO.getBotsByApiKeyOrSecret(newBot.apiKey as string);
+        if (existentBot.length > 0) throw new UnauthorizedError('A bot with same ApiKey already exists.');
+
+        existentBot = await botsDAO.getBotsByApiKeyOrSecret(newBot.apiSecret as string);
+        if (existentBot.length > 0) throw new UnauthorizedError('A bot with same ApiSecret already exists.');
 
         const result = await botsDAO.createBot(newBot);
 
-        return this.serviceResponseBuilder(result, `Error when inserting bot ${botName} in database.`, 201, newBot);
+        return this.serviceResponseBuilder(result, `Error when inserting bot ${botName} in database.`, 201);
     }
 
-    async updateBotStatus (botInfo: {botID: string, status: BotStatus})
+    async updateBotStatus (bot: BotDTO)
     {
-        botsPropertiesValidator.validateBotStatus(botInfo.status);
+        botsPropertiesValidator.validateExchange(bot.exchange);
+        botsPropertiesValidator.validateBotStatus(bot.status);
+        botsPropertiesValidator.validateBotAccount(bot.account);
 
-        if (botInfo.status === BotStatus.DELETE) return this.deleteBot(botInfo.botID);
+        await usersService.getUserByUserName(bot.userName as string);
+        const existentBot = await this.getBotByBotName(this.getBotName(bot));
+        const result = await botsDAO.updateBotStatus(existentBot.data.botID, bot.status);
 
-        const existentBot = await this.getBotByID(botInfo.botID);
-        const result = await botsDAO.updateBotStatus(botInfo.botID, botInfo.status);
-
-        await botsManager.updateBots(result);
+        // await botsManager.updateBots(result);
 
         return this.serviceResponseBuilder(result, `Error when updating bot ${existentBot.data.botName}`);
     }
 
-    async deleteBot (botID: string)
+    async deleteBot (bot: BotDTO)
     {
-        const existentBot = await this.getBotByID(botID);
-        const result = await botsDAO.deleteBotByID(existentBot.data.botID);
-        result[0].status = BotStatus.DELETE;
+        botsPropertiesValidator.validateExchange(bot.exchange);
+        botsPropertiesValidator.validateBotAccount(bot.account);
 
-        await botsManager.updateBots(result);
+        await usersService.getUserByUserName(bot.userName as string);
+        const existentBot = await this.getBotByBotName(this.getBotName(bot));
+
+        if (existentBot.data.status !== 'IDLE') throw new UnauthorizedError('A bot can be deleted only when it is in \'IDLE\' status.');
+
+        const result = await botsDAO.deleteBotByID(existentBot.data.botID);
+
+        // await botsManager.updateBots(result);
 
         return this.serviceResponseBuilder(result, `Error when deleting bot ${existentBot.data.botName}.`);
     }
 
-    private getBotName (bot: BotDTO)
+    getBotName (bot: BotDTO)
     {
-        return `${bot.userName}-${bot.account}@${bot.exchange}`;
+        return `${bot.userName}@${bot.exchange}.${bot.account}`;
     }
 }
 

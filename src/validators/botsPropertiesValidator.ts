@@ -9,12 +9,15 @@ class BotsPropertiesValidator extends PropertiesValidator
     private readonly allValidators =
         [
             this.validateExchange.bind(this),
-            this.validateBotStatus.bind(this)
+            this.validateBotStatus.bind(this),
+            this.validateBotAccount.bind(this),
+            this.validateApiKey.bind(this),
+            this.validateApiSecret.bind(this)
         ];
 
     validateAll (bot: BotDTO)
     {
-        const params = [ bot.exchange, bot.status ];
+        const params = [ bot.exchange, bot.status, bot.account, bot.apiKey, bot.apiSecret ];
 
         this.validateAllProperties(this.allValidators, params);
     }
@@ -32,6 +35,16 @@ class BotsPropertiesValidator extends PropertiesValidator
     validateBotAccount (account: string)
     {
         if (!account) throw new ValidationError('Account was not provided.');
+    }
+
+    validateApiKey (apiKey: string)
+    {
+        if (!apiKey) throw new ValidationError('ApiKey was not provided.');
+    }
+
+    validateApiSecret (apiSecret: string)
+    {
+        if (!apiSecret) throw new ValidationError('ApiSecret was not provided.');
     }
 }
 

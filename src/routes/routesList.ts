@@ -1,4 +1,5 @@
 import express, { Express } from 'express';
+import { authToken } from '../middlewares/AuthToken';
 import { botsController } from '../controllers/botsController';
 import { usersController } from '../controllers/usersController';
 
@@ -6,63 +7,69 @@ class Routes
 {
     initRoutes (app: Express)
     {
-        app.use('/createLogin', this.getLoginRoutes());
-        app.use('/authenticateLogin', this.getAuthenticateRoutes());
-        app.use('/checkLogin', this.getCheckRoutes());
+        app.use('/createLogin', this.createLoginRoutes());
+        app.use('/changePassword', this.changePasswordRoutes());
+        app.use('/authenticateLogin', this.authenticateLoginRoutes());
+        app.use('/checkLogin', this.checkLoginRoutes());
         app.use('/logout', this.getLogoutRoutes());
-        app.use('/bot', this.getBotRoutes());
+        app.use('/bots', this.getBotsRoutes());
     }
 
-    private getLoginRoutes ()
+    private createLoginRoutes ()
     {
-        const getLoginRoutes = express.Router();
+        const createLoginRoutes = express.Router();
 
-        getLoginRoutes.post('/', usersController.createUser.bind(usersController));
+        createLoginRoutes.post('/', usersController.createUser.bind(usersController));
 
-        return getLoginRoutes;
+        return createLoginRoutes;
     }
 
-    private getAuthenticateRoutes ()
+    private changePasswordRoutes ()
     {
-        const getAuthenticateRoutes = express.Router();
+        const changePasswordRoutes = express.Router();
 
-        getAuthenticateRoutes.post('/', usersController.authenticateUser.bind(usersController));
+        changePasswordRoutes.post('/', authToken.verifyTokenMiddleWare.bind(authToken), usersController.changePassword.bind(usersController));
 
-        return getAuthenticateRoutes;
+        return changePasswordRoutes;
     }
 
-    private getCheckRoutes ()
+    private authenticateLoginRoutes ()
     {
-        const getCheckRoutes = express.Router();
+        const authenticateLoginRoutes = express.Router();
 
-        getCheckRoutes.get('/', usersController.checkIfUserIsAuthenticated.bind(usersController));
+        authenticateLoginRoutes.post('/', usersController.authenticateUser.bind(usersController));
 
-        return getCheckRoutes;
+        return authenticateLoginRoutes;
+    }
+
+    private checkLoginRoutes ()
+    {
+        const checkLoginRoutes = express.Router();
+
+        checkLoginRoutes.get('/', usersController.checkIfUserIsAuthenticated.bind(usersController));
+
+        return checkLoginRoutes;
     }
 
     private getLogoutRoutes ()
     {
         const getLogoutRoutes = express.Router();
 
-        getLogoutRoutes.get('/', usersController.logout.bind(usersController));
+        getLogoutRoutes.get('/', authToken.verifyTokenMiddleWare.bind(authToken), usersController.logout.bind(usersController));
 
         return getLogoutRoutes;
     }
 
-    private getBotRoutes ()
+    private getBotsRoutes ()
     {
-        const getBotRoutes = express.Router();
+        const getBotsRoutes = express.Router();
 
-        // authToken.validateToken.bind(authToken)
-        getBotRoutes.get('/:id', botsController.getBotByID.bind(botsController));
-        // TODO essa rota pode estar inacessivel... mesmo do :id
-        getBotRoutes.get('/:userid', botsController.getBotByUserID.bind(botsController));
-        getBotRoutes.get('/', botsController.getAllBots.bind(botsController));
-        getBotRoutes.post('/', botsController.createBot.bind(botsController));
-        getBotRoutes.put('/', botsController.updateBotStatus.bind(botsController));
-        getBotRoutes.delete('/:id', botsController.deleteBot.bind(botsController));
+        getBotsRoutes.get('/', authToken.verifyTokenMiddleWare.bind(authToken), botsController.getBotsByUsername.bind(botsController));
+        getBotsRoutes.post('/', authToken.verifyTokenMiddleWare.bind(authToken), botsController.createBot.bind(botsController));
+        getBotsRoutes.put('/', authToken.verifyTokenMiddleWare.bind(authToken), botsController.updateBotStatus.bind(botsController));
+        getBotsRoutes.delete('/', authToken.verifyTokenMiddleWare.bind(authToken), botsController.deleteBot.bind(botsController));
 
-        return getBotRoutes;
+        return getBotsRoutes;
     }
 }
 

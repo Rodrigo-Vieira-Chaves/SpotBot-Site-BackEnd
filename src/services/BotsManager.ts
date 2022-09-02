@@ -25,15 +25,14 @@ class BotsManager
         {
             case BotStatus.IDLE: this.commandBot(botID, bot.botName as string, statusInPM2, 'STOP');
                 break;
-            case BotStatus.EXECUTING: this.startBot(bot, statusInPM2);
+            case BotStatus.ACTIVE: this.startBot(bot, statusInPM2);
                 break;
             case BotStatus.STOP_AFTER_TRADE: this.commandBot(botID, bot.botName as string, statusInPM2, 'STOP_AFTER_TRADE');
                 break;
-            case BotStatus.DELETE:
+            default:
                 await this.commandBot(botID, bot.botName as string, statusInPM2, 'STOP');
                 await delete_PM2(botID);
                 break;
-            default: break;
         }
     }
 

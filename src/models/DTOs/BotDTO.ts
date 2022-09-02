@@ -5,11 +5,13 @@ interface BotDTO
 {
   botID?: string;
   userID?: string;
-  botName?: string;
-  userName: string;
+  userName?: string;
+  botName: string;
   exchange: Exchanges;
-  account: string;
   status: BotStatus;
+  account: string;
+  apiKey?: string;
+  apiSecret?: string;
 }
 
 export { BotDTO };

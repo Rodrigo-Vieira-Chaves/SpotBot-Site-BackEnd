@@ -45,6 +45,17 @@ class UsersDAO extends DAO
                 passwordCryptography.encryptPassword(user.password)
             ]);
     }
+
+    updateUserPassword (userID: string, newPassword: string)
+    {
+        const sql = 'UPDATE users SET password = ? WHERE userID = ? RETURNING userID, userName';
+
+        return this.executeSQL<UserDTO>(sql,
+            [
+                passwordCryptography.encryptPassword(newPassword),
+                userID
+            ]);
+    }
 }
 
 const usersDAO = new UsersDAO();

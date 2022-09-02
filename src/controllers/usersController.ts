@@ -24,6 +24,11 @@ class UsersController extends Controller
         this.callService(res, usersService.createUser.bind(usersService), req.body);
     }
 
+    async changePassword (req: Request, res: Response)
+    {
+        this.callService(res, usersService.changePassword.bind(usersService), req.body);
+    }
+
     async authenticateUser (req: Request, res: Response)
     {
         this.callService(res, usersService.authenticateUser.bind(usersService), { req, res, user: req.body } );

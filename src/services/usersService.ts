@@ -43,6 +43,21 @@ class UsersService extends Service
         return this.serviceResponseBuilder(result, `Error when inserting user ${user.userName} in database.`, 201);
     }
 
+    async changePassword (user: { userName: string, currentPassword: string, newPassword: string })
+    {
+        usersPropertiesValidator.validateUserName(user.userName);
+        usersPropertiesValidator.validatePassword(user.currentPassword);
+        usersPropertiesValidator.validatePassword(user.newPassword);
+
+        const { userID, password } = (await this.getUserByUserName(user.userName)).data as UserDTO;
+
+        if (!passwordCryptography.comparePassword(user.currentPassword, password)) throw new UnauthorizedError('Password incorrect.');
+
+        const result = await usersDAO.updateUserPassword(userID as string, user.newPassword);
+
+        return this.serviceResponseBuilder(result, `Error when updating ${user.userName}'s password.`);
+    }
+
     async authenticateUser (param: { req: Request, res: Response, user: UserDTO })
     {
         usersPropertiesValidator.validateAll(param.user);
