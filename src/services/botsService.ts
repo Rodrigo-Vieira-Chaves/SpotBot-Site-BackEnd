@@ -83,7 +83,7 @@ class BotsService extends Service
         await usersService.getUserByUserName(bot.userName as string);
         const existentBot = await this.getBotByBotName(this.getBotName(bot));
 
-        if (existentBot.data.status !== 'IDLE') throw new UnauthorizedError('A bot can be deleted only when it is in \'IDLE\' status.');
+        if (existentBot.data.status !== BotStatus.IDLE) throw new UnauthorizedError(`A bot can be deleted only when it is in ${BotStatus.IDLE} status.`);
 
         const result = await botsDAO.deleteBotByID(existentBot.data.botID);
 
