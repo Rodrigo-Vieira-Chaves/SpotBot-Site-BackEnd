@@ -1,46 +1,48 @@
-import { connect_PM2, delete_PM2, describe_PM2, sendDataToProcess_PM2, start_PM2 } from '../utils/pm2Functions';
+import { BotResponse, Messenger } from './Messenger';
+import { connect_PM2, delete_PM2, describe_PM2, start_PM2 } from '../utils/pm2Functions';
 import { BotDTO } from '../models/DTOs/BotDTO';
 import { BotStatus } from './BotStatus';
+import { EmptyError } from '../errors/EmptyError';
+import { ValidationError } from '../errors/ValidationError';
+
+interface BotMessengers
+{
+    [botName: string]: Messenger;
+}
 
 class BotsManager
 {
-    async updateBots (botsList: BotDTO[])
+    private readonly botMessengers = {} as BotMessengers;
+
+    async updateBot (bot: BotDTO)
     {
         await connect_PM2();
 
-        for (const bot of botsList) this.updateBot(bot);
-    }
-
-    private async updateBot (bot: BotDTO)
-    {
-        const botProcess = await describe_PM2(bot.botName);
-
-        if (botProcess.length <= 0) return;
-
-
-        const botID = botProcess[0]?.pm_id as number;
-        const statusInPM2 = botProcess[0]?.pm2_env.status as string;
-
         switch (bot.status)
         {
-            case BotStatus.IDLE: this.commandBot(botID, bot.botName as string, statusInPM2, 'STOP');
+            case BotStatus.IDLE: await this.stopBot(bot, BotStatus.IDLE);
                 break;
-            case BotStatus.ACTIVE: this.startBot(bot, statusInPM2);
+            case BotStatus.ACTIVE: return this.startBot(bot);
                 break;
-            case BotStatus.STOP_AFTER_TRADE: this.commandBot(botID, bot.botName as string, statusInPM2, 'STOP_AFTER_TRADE');
+            case BotStatus.WAITING_PAYMENT:
+            case BotStatus.STOP_AFTER_TRADE: await this.stopBot(bot, BotStatus.STOP_AFTER_TRADE);
                 break;
-            default:
-                await this.commandBot(botID, bot.botName as string, statusInPM2, 'STOP');
-                await delete_PM2(botID);
-                break;
+            default: throw new ValidationError(`${bot.status} is not a valid status.`);
         }
     }
 
-    private async commandBot (botID: number, botName: string, statusInPM2: string, command: 'STOP' | 'STOP_AFTER_TRADE')
+    private async stopBot (bot: BotDTO, command: BotStatus.IDLE | BotStatus.STOP_AFTER_TRADE)
     {
-        if (!statusInPM2 || statusInPM2 === 'stopped') return;
+        const botProcess = await describe_PM2(bot.botName);
 
+        if (botProcess.length <= 0) throw new EmptyError(`${bot.botName} is not initialized in process manager.`);
 
+        const botPM2ID = botProcess[0].pm_id as number;
+        const statusInPM2 = botProcess[0].pm2_env.status as string;
+
+        if (statusInPM2 === 'stopped') throw new Error(`${bot.botName} is already ${BotStatus.IDLE} in process manager.`);
+
+        // TODO use redis pub/sub service here
         const packet =
         {
             type: 'process:msg',
@@ -51,24 +53,43 @@ class BotsManager
             topic: true
         };
 
-        const response = await sendDataToProcess_PM2(botID, packet);
-        console.log(`Bot ${botName} responded command '${command}' with ${response.success ? 'success' : 'failure'}.`);
+        // const response = await sendDataToProcess_PM2(botPM2ID, packet);
+        // console.log(`Bot ${botName} responded command '${command}' with ${response.success ? 'success' : 'failure'}.`);
     }
 
-    private async startBot (bot: BotDTO, statusInPM2: string)
+    private async startBot (bot: BotDTO)
     {
-        if (statusInPM2 === 'online') return;
+        const botProcess = await describe_PM2(bot.botName);
+        const statusInPM2 = botProcess[0]?.pm2_env.status as string;
 
+        if (statusInPM2 === 'online') throw new Error(`${bot.botName} is already ${BotStatus.ACTIVE} in process manager.`);
 
         const newBotProcess =
         {
             script: '../SpotBot/dist/index.js',
-            name: `${bot.botName}`,
-            autorestart: false
+            name: bot.botName,
+            autorestart: false,
+            args: `${bot.botName} ${bot.apiKey} ${bot.apiSecret}`
         };
 
         await start_PM2(newBotProcess);
-        console.log(`Bot ${bot.botName} is now executing successfully.`);
+
+        if (!Object.prototype.hasOwnProperty.call(this.botMessengers, bot.botName)) this.botMessengers[bot.botName] = new Messenger(bot.botName);
+
+        await this.sleep(5000);
+
+        return new Promise<BotResponse>((resolve, reject) =>
+        {
+            this.botMessengers[bot.botName].sendMessageToBot('CHANGE_STATUS', resolve, reject, BotStatus.ACTIVE);
+        });
+
+        // console.log(`Bot ${bot.botName} is now executing successfully.`);
+    }
+
+    sleep (ms: number)
+    {
+        // eslint-disable-next-line no-promise-executor-return
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }
 

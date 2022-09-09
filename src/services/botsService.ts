@@ -2,6 +2,7 @@ import { BotDTO } from '../models/DTOs/BotDTO';
 import { BotStatus } from './BotStatus';
 import { Service } from './Service';
 import { UnauthorizedError } from '../errors/UnauthorizedError';
+import { ValidationError } from '../errors/ValidationError';
 import { botsDAO } from '../repositories/DAOs/botsDAO';
 import { botsManager } from './BotsManager';
 import { botsPropertiesValidator } from '../validators/botsPropertiesValidator';
@@ -62,17 +63,24 @@ class BotsService extends Service
 
     async updateBotStatus (bot: BotDTO)
     {
-        botsPropertiesValidator.validateExchange(bot.exchange);
         botsPropertiesValidator.validateBotStatus(bot.status);
+        botsPropertiesValidator.validateExchange(bot.exchange);
         botsPropertiesValidator.validateBotAccount(bot.account);
 
-        await usersService.getUserByUserName(bot.userName as string);
-        const existentBot = await this.getBotByBotName(this.getBotName(bot));
-        const result = await botsDAO.updateBotStatus(existentBot.data.botID, bot.status);
+        let existentBot = (await this.getBotByBotName(this.getBotName(bot))).data as BotDTO;
 
-        // await botsManager.updateBots(result);
+        if (bot.status === existentBot.status) throw new ValidationError(`${this.getBotName(bot)} is already in status ${bot.status}.`);
 
-        return this.serviceResponseBuilder(result, `Error when updating bot ${existentBot.data.botName}`);
+        existentBot = (await this.getBotByID(existentBot.botID as string)).data as BotDTO;
+        existentBot.status = bot.status;
+
+        const response = await botsManager.updateBot(existentBot);
+
+        console.log(`RESPOSTA DO ROBÔ --> ${JSON.stringify(response)}`);
+        // const result = await botsDAO.updateBotStatus(existentBot.botID as string, bot.status);
+        const result = await botsDAO.updateBotStatus(existentBot.botID as string, BotStatus.IDLE);
+
+        return this.serviceResponseBuilder(result, `Error when updating bot ${existentBot.botName}`);
     }
 
     async deleteBot (bot: BotDTO)
@@ -86,8 +94,6 @@ class BotsService extends Service
         if (existentBot.data.status !== BotStatus.IDLE) throw new UnauthorizedError(`A bot can be deleted only when it is in ${BotStatus.IDLE} status.`);
 
         const result = await botsDAO.deleteBotByID(existentBot.data.botID);
-
-        // await botsManager.updateBots(result);
 
         return this.serviceResponseBuilder(result, `Error when deleting bot ${existentBot.data.botName}.`);
     }

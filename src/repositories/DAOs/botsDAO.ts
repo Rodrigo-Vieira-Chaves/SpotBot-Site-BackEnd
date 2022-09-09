@@ -11,7 +11,9 @@ class BotsDAO extends DAO
                             botName,
                             exchange,
                             status,
-                            account
+                            account,
+                            apiKey,
+                            apiSecret
                     FROM bots WHERE botID = ?`;
 
         return this.executeSQL<BotDTO>(sql, [ botID ]);
