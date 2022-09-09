@@ -14,7 +14,7 @@ class Controller
             const result = await service(serviceParam);
             apiResponse = apiResponseBuilder.writeResponse(result);
         }
-        catch (error)
+        catch (error: any)
         {
             apiResponse = apiResponseBuilder.writeErrorResponse(error);
         }

@@ -62,7 +62,7 @@ class Messenger
 
         if (response.errorMessage)
         {
-            if (reject) reject(response.errorMessage);
+            if (reject) reject(new Error(response.errorMessage));
             else console.log(response.errorMessage);
 
             return;

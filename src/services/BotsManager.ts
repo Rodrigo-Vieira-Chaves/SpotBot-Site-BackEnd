@@ -76,16 +76,16 @@ class BotsManager
 
         if (!Object.prototype.hasOwnProperty.call(this.botMessengers, bot.botName)) this.botMessengers[bot.botName] = new Messenger(bot.botName);
 
-        await this.sleep(5000);
+        // FIXME take it off after seeing how make bot respond to server that it is ready to receive commands
+        await this.sleep(2000);
 
         return new Promise<BotResponse>((resolve, reject) =>
         {
             this.botMessengers[bot.botName].sendMessageToBot('CHANGE_STATUS', resolve, reject, BotStatus.ACTIVE);
         });
-
-        // console.log(`Bot ${bot.botName} is now executing successfully.`);
     }
 
+    // FIXME take it off
     sleep (ms: number)
     {
         // eslint-disable-next-line no-promise-executor-return
