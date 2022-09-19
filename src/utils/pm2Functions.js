@@ -59,25 +59,25 @@ function delete_PM2 (id)
     });
 }
 
-function sendDataToProcess_PM2 (id, packet)
-{
-    return new Promise((resolve, reject) =>
-    {
-        pm2.sendDataToProcessId(id, packet, (err, result) =>
-        {
-            errorCheck_PM2(err, 'sendDataToProcessId', reject);
+// function sendDataToProcess_PM2 (id, packet)
+// {
+//     return new Promise((resolve, reject) =>
+//     {
+//         pm2.sendDataToProcessId(id, packet, (err, result) =>
+//         {
+//             errorCheck_PM2(err, 'sendDataToProcessId', reject);
 
-            pm2.launchBus((err, pm2_bus) =>
-            {
-                errorCheck_PM2(err, 'launchBus', reject);
+//             pm2.launchBus((err, pm2_bus) =>
+//             {
+//                 errorCheck_PM2(err, 'launchBus', reject);
 
-                pm2_bus.on('process:msg', (packet) =>
-                {
-                    resolve(packet.data);
-                });
-            });
-        });
-    });
-}
+//                 pm2_bus.on('process:msg', (packet) =>
+//                 {
+//                     resolve(packet.data);
+//                 });
+//             });
+//         });
+//     });
+// }
 
-export { connect_PM2, start_PM2, describe_PM2, delete_PM2, sendDataToProcess_PM2 };
+export { connect_PM2, start_PM2, describe_PM2, delete_PM2 };

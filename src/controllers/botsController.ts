@@ -16,10 +16,16 @@ class BotsController extends Controller
         this.callService(res, botsService.createBot.bind(botsService), req.body);
     }
 
-    updateBotStatus (req: Request, res: Response)
+    startBot (req: Request, res: Response)
     {
         req.body.userName = authToken.verifyToken(req.cookies.bearer).payload;
-        this.callService(res, botsService.updateBotStatus.bind(botsService), req.body);
+        this.callService(res, botsService.startBot.bind(botsService), req.body);
+    }
+
+    makeBotIdleOrStopAfterTrade (req: Request, res: Response)
+    {
+        req.body.userName = authToken.verifyToken(req.cookies.bearer).payload;
+        this.callService(res, botsService.makeBotIdleOrStopAfterTrade.bind(botsService), req.body);
     }
 
     deleteBot (req: Request, res: Response)

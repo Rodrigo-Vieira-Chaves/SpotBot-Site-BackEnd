@@ -1,5 +1,6 @@
 import * as redis from 'redis';
 import { BotStatus } from './BotStatus';
+import { botsManager } from './BotsManager';
 
 type BackEndCommand = 'CHANGE_STATUS' | 'GET_STATUS';
 
@@ -19,9 +20,9 @@ interface BotResponse
 
 class Messenger
 {
-    private readonly botName;
-    private promiseResolve: ((value: BotResponse | PromiseLike<BotResponse>) => void) | undefined;
-    private promiseReject: ((reason?: any) => void) | undefined;
+    public readonly botName;
+    public promiseResolve: ((value: BotResponse | PromiseLike<BotResponse>) => void) | undefined;
+    public promiseReject: ((reason?: any) => void) | undefined;
 
     private static readonly publisher = redis.createClient();
     private static readonly subscriber = redis.createClient();
@@ -49,27 +50,7 @@ class Messenger
         await Messenger.publisher.connect();
         await Messenger.subscriber.connect();
 
-        await Messenger.subscriber.subscribe('BOT_RESPONSE', (message) => this.processBotResponse(JSON.parse(message) as BotResponse));
-    }
-
-    private async processBotResponse (response: BotResponse)
-    {
-        const resolve = this.promiseResolve;
-        const reject = this.promiseReject;
-
-        this.promiseReject = undefined;
-        this.promiseResolve = undefined;
-
-        if (response.errorMessage)
-        {
-            if (reject) reject(new Error(response.errorMessage));
-            else console.log(response.errorMessage);
-
-            return;
-        }
-
-        if (resolve) resolve(response);
-        else console.log(response);
+        await Messenger.subscriber.subscribe('BOT_RESPONSE', (message) => botsManager.processBotResponse(JSON.parse(message) as BotResponse));
     }
 }
 

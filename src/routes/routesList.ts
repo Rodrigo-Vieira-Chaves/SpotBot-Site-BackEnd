@@ -66,7 +66,8 @@ class Routes
 
         getBotsRoutes.get('/', authToken.verifyTokenMiddleWare.bind(authToken), botsController.getBotsByUsername.bind(botsController));
         getBotsRoutes.post('/', authToken.verifyTokenMiddleWare.bind(authToken), botsController.createBot.bind(botsController));
-        getBotsRoutes.put('/', authToken.verifyTokenMiddleWare.bind(authToken), botsController.updateBotStatus.bind(botsController));
+        getBotsRoutes.put('/startBot', authToken.verifyTokenMiddleWare.bind(authToken), botsController.startBot.bind(botsController));
+        getBotsRoutes.put('/stopBotOrStopAfterTrade', authToken.verifyTokenMiddleWare.bind(authToken), botsController.makeBotIdleOrStopAfterTrade.bind(botsController));
         getBotsRoutes.delete('/', authToken.verifyTokenMiddleWare.bind(authToken), botsController.deleteBot.bind(botsController));
 
         return getBotsRoutes;
