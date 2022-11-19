@@ -1,4 +1,4 @@
-import { BotResponse, Messenger } from './Messenger';
+import { BackEndCommand, BotResponse, Messenger } from './Messenger';
 import { connect_PM2, delete_PM2, describe_PM2, start_PM2 } from '../utils/pm2Functions';
 import { BotDTO } from '../models/DTOs/BotDTO';
 import { BotStatus } from './BotStatus';
@@ -22,7 +22,14 @@ class BotsManager
         const botProcess = await describe_PM2(bot.botName);
         const statusInPM2 = botProcess[0]?.pm2_env.status as string;
 
-        if (statusInPM2 === 'online') throw new Error(`${bot.botName} is already ${BotStatus.ACTIVE} in process manager.`);
+        if (statusInPM2 === 'online')
+        {
+            const botCurrentStatus = await this.sendMessageSyncToBot(bot.botName, 'GET_STATUS');
+
+            if (botCurrentStatus.currentStatus === BotStatus.ACTIVE) throw new Error(`${bot.botName} is already ${BotStatus.ACTIVE}.`);
+
+            return this.sendMessageSyncToBot(bot.botName, 'CHANGE_STATUS', BotStatus.ACTIVE);
+        }
 
         const newBotProcess =
         {
@@ -36,10 +43,7 @@ class BotsManager
 
         if (!Object.prototype.hasOwnProperty.call(this.botMessengers, bot.botName)) this.botMessengers[bot.botName] = new Messenger(bot.botName);
 
-        return new Promise<BotResponse>((resolve, reject) =>
-        {
-            this.botMessengers[bot.botName].sendMessageToBot('CHANGE_STATUS', resolve, reject, BotStatus.ACTIVE);
-        });
+        return this.sendMessageSyncToBot(bot.botName, 'CHANGE_STATUS', BotStatus.ACTIVE);
     }
 
     async makeBotIdleOrStopAfterTrade (bot: BotDTO)
@@ -51,16 +55,13 @@ class BotsManager
 
         const botProcess = await describe_PM2(bot.botName);
 
-        if (botProcess.length <= 0) throw new EmptyError(`${bot.botName} is not initialized in process manager.`);
+        if (botProcess.length <= 0) throw new EmptyError(`${bot.botName} is not initialized.`);
 
         const statusInPM2 = botProcess[0].pm2_env.status as string;
 
-        if (statusInPM2 === 'stopped') throw new Error(`${bot.botName} is stopped in process manager.`);
+        if (statusInPM2 === 'stopped') throw new Error(`${bot.botName} is ${BotStatus.IDLE}.`);
 
-        return new Promise<BotResponse>((resolve, reject) =>
-        {
-            this.botMessengers[bot.botName].sendMessageToBot('CHANGE_STATUS', resolve, reject, bot.status);
-        });
+        return this.sendMessageSyncToBot(bot.botName, 'CHANGE_STATUS', bot.status);
     }
 
     async deleteBot (bot: BotDTO)
@@ -69,11 +70,11 @@ class BotsManager
 
         const botProcess = await describe_PM2(bot.botName);
 
-        if (botProcess.length <= 0) throw new EmptyError(`${bot.botName} is not initialized in process manager.`);
+        if (botProcess.length <= 0) return Promise.resolve();
 
         const statusInPM2 = botProcess[0].pm2_env.status as string;
 
-        if (statusInPM2 === 'online') throw new Error(`${bot.botName} is online in process manager, make it ${BotStatus.IDLE} before deleting it.`);
+        if (statusInPM2 === 'online') throw new Error(`${bot.botName} is active, make it ${BotStatus.IDLE} before deleting it.`);
 
         return delete_PM2(botProcess[0].pm_id);
     }
@@ -103,6 +104,14 @@ class BotsManager
         }
 
         if (resolve) resolve(response);
+    }
+
+    private sendMessageSyncToBot (botName: string, command: BackEndCommand, status?: BotStatus)
+    {
+        return new Promise<BotResponse>((resolve, reject) =>
+        {
+            this.botMessengers[botName].sendMessageToBot(command, resolve, reject, status);
+        });
     }
 }
 
